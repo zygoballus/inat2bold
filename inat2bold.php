@@ -2,7 +2,7 @@
 // This script is dual licensed under the MIT License and the CC0 License.
 error_reporting( E_ALL );
 ini_set( 'display_errors', 1 );
-ini_set( 'max_execution_time', 600 );
+ini_set( 'max_execution_time', 900 );
 
 $useragent = 'iNat2BOLD Script/1.0';
 $inatapi = 'https://api.inaturalist.org/v1/';
@@ -107,6 +107,24 @@ function get_taxonomy( $ancestorids ) {
 	}
 }
 
+function get_sex( $annotations ) {
+	foreach ( $annotations as $annotation ) {
+		if ( $annotation['controlled_attribute_id'] === 9 ) {
+			return $annotation['controlled_value']['label'];
+		}
+	}
+	return null;
+}
+
+function get_life_stage( $annotations ) {
+	foreach ( $annotations as $annotation ) {
+		if ( $annotation['controlled_attribute_id'] === 1 ) {
+			return $annotation['controlled_value']['label'];
+		}
+	}
+	return null;
+}
+
 function get_observation_data( $observationid, $guessplace ) {
 	global $inatapi, $errors;
 	$data = [];
@@ -126,6 +144,10 @@ function get_observation_data( $observationid, $guessplace ) {
 			}
 			if ( $guessplace ) {
 				$data['exact_site'] = $results['place_guess'];
+			}
+			if ( isset( $results['annotations'] ) ) {
+				$data['sex'] = get_sex( $results['annotations'] );
+				$data['life_stage'] = get_life_stage( $results['annotations'] );
 			}
 			$location = explode( ',', $results['location'] );
 			$data['latitude'] = $location[0];
@@ -161,6 +183,7 @@ if ( $_POST ) {
 				if ( isset( $_POST['identifier_email'] ) ) $observationdata[$a]['identifier_email'] = $_POST['identifier_email'];
 				if ( isset( $_POST['identifier_institution'] ) ) $observationdata[$a]['identifier_institution'] = $_POST['identifier_institution'];
 				if ( isset( $_POST['identification_method'] ) ) $observationdata[$a]['identification_method'] = $_POST['identification_method'];
+				if ( isset( $_POST['reproduction'] ) ) $observationdata[$a]['reproduction'] = $_POST['reproduction'];
 				if ( isset( $_POST['voucher_status'] ) ) $observationdata[$a]['voucher_status'] = $_POST['voucher_status'];
 				if ( isset( $_POST['tissue_descriptor'] ) ) $observationdata[$a]['tissue_descriptor'] = $_POST['tissue_descriptor'];
 				if ( isset( $_POST['collectors'] ) ) $observationdata[$a]['collectors'] = $_POST['collectors'];
@@ -251,6 +274,8 @@ $(document).ready(function () {
 	<input type="text" id="identifier_institution" name="identifier_institution" /><br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;<label for="identification_method">Identification method:</label>
 	<input type="text" id="identification_method" name="identification_method" /><br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;<label for="reproduction">Reproduction:</label>
+	<input type="text" id="reproduction" name="reproduction" /><br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;<label for="voucher_status">Voucher status:</label>
 	<input type="text" id="voucher_status" name="voucher_status" /><br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;<label for="tissue_descriptor">Tissue descriptor:</label>
