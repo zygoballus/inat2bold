@@ -69,6 +69,44 @@ function get_region( $placeids, $observationid ) {
 	}
 }
 
+function get_taxonomy( $ancestorids ) {
+	global $inatapi, $errors;
+	$ancestorlist = implode( ',', $ancestorids );
+	$url = $inatapi . 'taxa/' . $ancestorlist;
+	$inatdata = make_curl_request( $url );
+	if ( $inatdata && $inatdata['results'] ) {
+		$taxonomy = [];
+		foreach ( $inatdata['results'] as $taxon ) {
+			switch ( $taxon['rank'] ) {
+				case 'phylum':
+					$taxonomy['phylum'] = $taxon['name'];
+					break;
+				case 'class':
+					$taxonomy['class'] = $taxon['name'];
+					break;
+				case 'order':
+					$taxonomy['order'] = $taxon['name'];
+					break;
+				case 'family':
+					$taxonomy['family'] = $taxon['name'];
+					break;
+				case 'subfamily':
+					$taxonomy['subfamily'] = $taxon['name'];
+					break;
+				case 'genus':
+					$taxonomy['genus'] = $taxon['name'];
+					break;
+				case 'species':
+					$taxonomy['species'] = $taxon['name'];
+					break;
+			}
+		}
+		return $taxonomy;
+	} else {
+		return null;
+	}
+}
+
 function get_observation_data( $observationid, $guessplace ) {
 	global $inatapi, $errors;
 	$data = [];
@@ -82,6 +120,10 @@ function get_observation_data( $observationid, $guessplace ) {
 			$data['country'] = get_country( $results['place_ids'], $observationid );
 			$data['state'] = get_state( $results['place_ids'], $observationid );
 			$data['region'] = get_region( $results['place_ids'], $observationid );
+			$taxonomy = get_taxonomy( $results['taxon']['ancestor_ids'] );
+			if ( $taxonomy ) {
+				$data = array_merge( $data, $taxonomy );
+			}
 			if ( $guessplace ) {
 				$data['exact_site'] = $results['place_guess'];
 			}
@@ -115,6 +157,12 @@ if ( $_POST ) {
 			if ( preg_match( '/\d+/', $observationid, $matches ) ) {
 				$observationid = $matches[0];
 				$observationdata[$a] = get_observation_data( $observationid, $guessplace );
+				if ( isset( $_POST['identifier'] ) ) $observationdata[$a]['identifier'] = $_POST['identifier'];
+				if ( isset( $_POST['identifier_email'] ) ) $observationdata[$a]['identifier_email'] = $_POST['identifier_email'];
+				if ( isset( $_POST['identifier_institution'] ) ) $observationdata[$a]['identifier_institution'] = $_POST['identifier_institution'];
+				if ( isset( $_POST['identification_method'] ) ) $observationdata[$a]['identification_method'] = $_POST['identification_method'];
+				if ( isset( $_POST['voucher_status'] ) ) $observationdata[$a]['voucher_status'] = $_POST['voucher_status'];
+				if ( isset( $_POST['tissue_descriptor'] ) ) $observationdata[$a]['tissue_descriptor'] = $_POST['tissue_descriptor'];
 				if ( isset( $_POST['collectors'] ) ) $observationdata[$a]['collectors'] = $_POST['collectors'];
 				if ( isset( $_POST['gps_source'] ) ) $observationdata[$a]['gps_source'] = $_POST['gps_source'];
 				if ( isset( $_POST['habitat'] ) ) $observationdata[$a]['habitat'] = $_POST['habitat'];
@@ -195,6 +243,18 @@ $(document).ready(function () {
 	<input type="checkbox" id="guess" name="guess" <?php if ($guess) echo "checked";?> value="yes">
 	<label for="guess">Map iNaturalist place guess to BOLD exact site.</label><br/>
 	Optional data (not supplied by iNaturalist):<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;<label for="identifier">Identifier:</label>
+	<input type="text" id="identifier" name="identifier" /><br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;<label for="identifier_email">Identifier email:</label>
+	<input type="text" id="identifier_email" name="identifier_email" /><br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;<label for="identifier_institution">Identifier institution:</label>
+	<input type="text" id="identifier_institution" name="identifier_institution" /><br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;<label for="identification_method">Identification method:</label>
+	<input type="text" id="identification_method" name="identification_method" /><br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;<label for="voucher_status">Voucher status:</label>
+	<input type="text" id="voucher_status" name="voucher_status" /><br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;<label for="tissue_descriptor">Tissue descriptor:</label>
+	<input type="text" id="tissue_descriptor" name="tissue_descriptor" /><br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;<label for="collectors">Collectors:</label>
 	<input type="text" id="collectors" name="collectors" /><br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;<label for="gps_source">GPS source:</label>
@@ -223,6 +283,54 @@ if ( $errors ) {
 
 if ( $observationdata ) {
 
+// Taxonomy Table
+	print( '<h2>Taxonomy</h2>' );
+	print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
+	print( '<tr><th>Phylum</th><th>Class</th><th>Order</th><th>Family</th><th>Subfamily</th><th>Genus</th><th>Species</th><th>Identifier</th><th>Identifier Email</th><th>Identifier Institution</th><th>Identification Method</th><th>Taxonomy Notes</th></tr>' );
+
+	$x = 0;
+	foreach ( $observationdata as $observation ) {
+		print( '<tr>' );
+			isset( $observation['phylum'] ) ? print( '<td>'.$observation['phylum'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['class'] ) ? print( '<td>'.$observation['class'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['order'] ) ? print( '<td>'.$observation['order'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['family'] ) ? print( '<td>'.$observation['family'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['subfamily'] ) ? print( '<td>'.$observation['subfamily'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['genus'] ) ? print( '<td>'.$observation['genus'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['species'] ) ? print( '<td>'.$observation['species'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['identifier'] ) ? print( '<td>'.$observation['identifier'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['identifier_email'] ) ? print( '<td>'.$observation['identifier_email'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['identifier_institution'] ) ? print( '<td>'.$observation['identifier_institution'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['identification_method'] ) ? print( '<td>'.$observation['identification_method'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['taxonomy_notes'] ) ? print( '<td>'.$observation['taxonomy_notes'].'</td>' ) : print( '<td></td>' );
+		print( '</tr>' );
+		$x++;
+	}
+	print( '</table>' );
+
+// Specimen Details Table
+	print( '<h2>Specimen Details</h2>' );
+	print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
+	print( '<tr><th>Sex</th><th>Reproduction</th><th>Life Stage</th><th>Extra Info</th><th>Notes</th><th>Voucher Status</th><th>Tissue Descriptor</th><th>Associated Taxa</th><th>Associated Specimens</th><th>External URLs</th></tr>' );
+
+	$x = 0;
+	foreach ( $observationdata as $observation ) {
+		print( '<tr>' );
+			isset( $observation['sex'] ) ? print( '<td>'.$observation['sex'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['reproduction'] ) ? print( '<td>'.$observation['reproduction'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['life_stage'] ) ? print( '<td>'.$observation['life_stage'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['extra_info'] ) ? print( '<td>'.$observation['extra_info'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['notes'] ) ? print( '<td>'.$observation['notes'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['voucher_status'] ) ? print( '<td>'.$observation['voucher_status'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['tissue_descriptor'] ) ? print( '<td>'.$observation['tissue_descriptor'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['associated_taxa'] ) ? print( '<td>'.$observation['associated_taxa'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['associated specimens'] ) ? print( '<td>'.$observation['associated specimens'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['external_urls'] ) ? print( '<td>'.$observation['external_urls'].'</td>' ) : print( '<td></td>' );
+		print( '</tr>' );
+		$x++;
+	}
+	print( '</table>' );
+	
 // Collection Data Table
 	print( '<h2>Collection Data</h2>' );
 	print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
@@ -257,66 +365,9 @@ if ( $observationdata ) {
 		$x++;
 	}
 	print( '</table>' );
-
-/*
-field_id
-museum_id
-collection_code
-institution_storing
-
-phylum
-class
-order
-family
-subfamily
-genus
-species
-identifier
-identifier_email
-identifier_institution
-identification_method
-taxonomy_notes
-
-sex
-reproduction
-life_stage
-extra_info
-notes
-voucher_status
-tissue_descriptor
-associated_taxa
-associated specimens
-external_urls
-
-	print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
-	print( '<tr><th>Phylum</th><th>Class</th><th>Order</th><th>Family</th><th>Subfamily</th><th>Genus</th><th>Species</th></tr>' );
-	$x = 0;
-	foreach ( $observationdata as $observation ) {
-		print( '<tr>' );
-		$ancestors = $taxonomydata[$x];
-		foreach ( $ranks as $rank ) {
-			$rankfilled = false;
-			foreach ( $ancestors as $ancestor ) {
-				if ( $ancestor['rank'] == $rank ) {
-					print( '<td>'.$ancestor['name'].'</td>' );
-					$rankfilled = true;
-					break;
-				}
-			}
-			if ( !$rankfilled ) {
-				print( '<td></td>' );
-			}
-		}
-
-		print( '</tr>' );
-		$x++;
-	}
-	print( '</table>' );
-*/
 }
 ?>
 
 </div>
 </body>
 </html>
-
