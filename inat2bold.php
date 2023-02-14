@@ -9,6 +9,7 @@ $inatapi = 'https://api.inaturalist.org/v1/';
 $errors = [];
 $observationdata = [];
 $guess = true;
+$fileoutput = false;
 
 /**
  * Make curl request using the passed URL
@@ -127,7 +128,53 @@ function get_life_stage( $annotations ) {
 
 function get_observation_data( $observationid, $guessplace ) {
 	global $inatapi, $errors;
-	$data = [];
+	// Initialize data
+	$data = array(
+		'phylum'=>null,
+		'class'=>null,
+		'order'=>null,
+		'family'=>null,
+		'subfamily'=>null,
+		'genus'=>null,
+		'species'=>null,
+		'identifier'=>null,
+		'identifier_email'=>null,
+		'identifier_institution'=>null,
+		'identification_method'=>null,
+		'taxonomy_notes'=>null,
+		'sex'=>null,
+		'reproduction'=>null,
+		'life_stage'=>null,
+		'extra_info'=>null,
+		'notes'=>null,
+		'voucher_status'=>null,
+		'tissue_descriptor'=>null,
+		'associated_taxa'=>null,
+		'associated specimens'=>null,
+		'external_urls'=>null,
+		'collectors'=>null,
+		'collection_date'=>null,
+		'country'=>null,
+		'state'=>null,
+		'region'=>null,
+		'sector'=>null,
+		'exact_site'=>null,
+		'latitude'=>null,
+		'longitude'=>null,
+		'elevation'=>null,
+		'depth'=>null,
+		'elevation_precision'=>null,
+		'depth_precision'=>null,
+		'gps_source'=>null,
+		'coordinate_accuracy'=>null,
+		'event_time'=>null,
+		'collection_date_accuracy'=>null,
+		'habitat'=>null,
+		'sampling_protocol'=>null,
+		'collection_notes'=>null,
+		'site_code'=>null,
+		'collection_event_id'=>null
+	);
 	if ( $observationid ) {
 		$url = $inatapi . 'observations/' . $observationid;
 		$inatdata = make_curl_request( $url );
@@ -166,11 +213,8 @@ function get_observation_data( $observationid, $guessplace ) {
 if ( $_POST ) {
 	// If an observation was posted, look up the data.
 	if ( isset( $_POST['observations'] ) ) {
-		if ( isset( $_POST['guess'] ) ) {
-			$guessplace = true;
-		} else {
-			$guessplace = false;
-		}
+		$guessplace = isset( $_POST['guess'] ) ? true : false;
+		$fileoutput = isset( $_POST['fileoutput'] ) ? true : false;
 		$observationlist = explode( "\n", $_POST['observations'] );
 		// Limit to 96 observations.
 		$observationlist = array_slice( $observationlist, 0, 96 );
@@ -179,20 +223,23 @@ if ( $_POST ) {
 			if ( preg_match( '/\d+/', $observationid, $matches ) ) {
 				$observationid = $matches[0];
 				$observationdata[$a] = get_observation_data( $observationid, $guessplace );
-				if ( isset( $_POST['identifier'] ) ) $observationdata[$a]['identifier'] = $_POST['identifier'];
-				if ( isset( $_POST['identifier_email'] ) ) $observationdata[$a]['identifier_email'] = $_POST['identifier_email'];
-				if ( isset( $_POST['identifier_institution'] ) ) $observationdata[$a]['identifier_institution'] = $_POST['identifier_institution'];
-				if ( isset( $_POST['identification_method'] ) ) $observationdata[$a]['identification_method'] = $_POST['identification_method'];
-				if ( isset( $_POST['reproduction'] ) ) $observationdata[$a]['reproduction'] = $_POST['reproduction'];
-				if ( isset( $_POST['voucher_status'] ) ) $observationdata[$a]['voucher_status'] = $_POST['voucher_status'];
-				if ( isset( $_POST['tissue_descriptor'] ) ) $observationdata[$a]['tissue_descriptor'] = $_POST['tissue_descriptor'];
-				if ( isset( $_POST['collectors'] ) ) $observationdata[$a]['collectors'] = $_POST['collectors'];
-				if ( isset( $_POST['gps_source'] ) ) $observationdata[$a]['gps_source'] = $_POST['gps_source'];
-				if ( isset( $_POST['habitat'] ) ) $observationdata[$a]['habitat'] = $_POST['habitat'];
-				if ( isset( $_POST['sampling_protocol'] ) ) $observationdata[$a]['sampling_protocol'] = $_POST['sampling_protocol'];
-				if ( isset( $_POST['site_code'] ) ) $observationdata[$a]['site_code'] = $_POST['site_code'];
-				if ( isset( $_POST['collection_event_id'] ) ) $observationdata[$a]['collection_event_id'] = $_POST['collection_event_id'];
+				if ( $observationdata[$a] ) {
+					if ( isset( $_POST['identifier'] ) ) $observationdata[$a]['identifier'] = $_POST['identifier'];
+					if ( isset( $_POST['identifier_email'] ) ) $observationdata[$a]['identifier_email'] = $_POST['identifier_email'];
+					if ( isset( $_POST['identifier_institution'] ) ) $observationdata[$a]['identifier_institution'] = $_POST['identifier_institution'];
+					if ( isset( $_POST['identification_method'] ) ) $observationdata[$a]['identification_method'] = $_POST['identification_method'];
+					if ( isset( $_POST['reproduction'] ) ) $observationdata[$a]['reproduction'] = $_POST['reproduction'];
+					if ( isset( $_POST['voucher_status'] ) ) $observationdata[$a]['voucher_status'] = $_POST['voucher_status'];
+					if ( isset( $_POST['tissue_descriptor'] ) ) $observationdata[$a]['tissue_descriptor'] = $_POST['tissue_descriptor'];
+					if ( isset( $_POST['collectors'] ) ) $observationdata[$a]['collectors'] = $_POST['collectors'];
+					if ( isset( $_POST['gps_source'] ) ) $observationdata[$a]['gps_source'] = $_POST['gps_source'];
+					if ( isset( $_POST['habitat'] ) ) $observationdata[$a]['habitat'] = $_POST['habitat'];
+					if ( isset( $_POST['sampling_protocol'] ) ) $observationdata[$a]['sampling_protocol'] = $_POST['sampling_protocol'];
+					if ( isset( $_POST['site_code'] ) ) $observationdata[$a]['site_code'] = $_POST['site_code'];
+					if ( isset( $_POST['collection_event_id'] ) ) $observationdata[$a]['collection_event_id'] = $_POST['collection_event_id'];
+				}
 			} else {
+				$errors[] = 'Invalid observation number: ' . $observationid;
 				$observationdata[$a] = null;
 			}
 			if ( count( $observationlist ) > 1 ) {
@@ -202,8 +249,8 @@ if ( $_POST ) {
 		}
 	}
 }
+if ( !$fileoutput ) {
 ?>
-
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta http-equiv="Content-Language" content="en-us">
@@ -263,6 +310,8 @@ $(document).ready(function () {
 	Observation List (1 per line, max 96):<br/><textarea rows="5" cols="50" name="observations"></textarea>
 </p>
 <p class="optionaldata">
+	<input type="checkbox" id="fileoutput" name="fileoutput" <?php if ($fileoutput) echo "checked";?> value="yes">
+	<label for="fileoutput">Output data to CSV file.</label><br/>
 	<input type="checkbox" id="guess" name="guess" <?php if ($guess) echo "checked";?> value="yes">
 	<label for="guess">Map iNaturalist place guess to BOLD exact site.</label><br/>
 	Optional data (not supplied by iNaturalist):<br/>
@@ -305,15 +354,12 @@ if ( $errors ) {
 	}
 	print( '</p>' );
 }
-
 if ( $observationdata ) {
-
-// Taxonomy Table
+	// Taxonomy Table
 	print( '<h2>Taxonomy</h2>' );
 	print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
 	print( '<tr><th>Phylum</th><th>Class</th><th>Order</th><th>Family</th><th>Subfamily</th><th>Genus</th><th>Species</th><th>Identifier</th><th>Identifier Email</th><th>Identifier Institution</th><th>Identification Method</th><th>Taxonomy Notes</th></tr>' );
 
-	$x = 0;
 	foreach ( $observationdata as $observation ) {
 		print( '<tr>' );
 			isset( $observation['phylum'] ) ? print( '<td>'.$observation['phylum'].'</td>' ) : print( '<td></td>' );
@@ -329,16 +375,14 @@ if ( $observationdata ) {
 			isset( $observation['identification_method'] ) ? print( '<td>'.$observation['identification_method'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['taxonomy_notes'] ) ? print( '<td>'.$observation['taxonomy_notes'].'</td>' ) : print( '<td></td>' );
 		print( '</tr>' );
-		$x++;
 	}
 	print( '</table>' );
 
-// Specimen Details Table
+	// Specimen Details Table
 	print( '<h2>Specimen Details</h2>' );
 	print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
 	print( '<tr><th>Sex</th><th>Reproduction</th><th>Life Stage</th><th>Extra Info</th><th>Notes</th><th>Voucher Status</th><th>Tissue Descriptor</th><th>Associated Taxa</th><th>Associated Specimens</th><th>External URLs</th></tr>' );
 
-	$x = 0;
 	foreach ( $observationdata as $observation ) {
 		print( '<tr>' );
 			isset( $observation['sex'] ) ? print( '<td>'.$observation['sex'].'</td>' ) : print( '<td></td>' );
@@ -352,16 +396,14 @@ if ( $observationdata ) {
 			isset( $observation['associated specimens'] ) ? print( '<td>'.$observation['associated specimens'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['external_urls'] ) ? print( '<td>'.$observation['external_urls'].'</td>' ) : print( '<td></td>' );
 		print( '</tr>' );
-		$x++;
 	}
 	print( '</table>' );
-	
-// Collection Data Table
+
+	// Collection Data Table
 	print( '<h2>Collection Data</h2>' );
 	print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
 	print( '<tr><th>Collectors</th><th>Collection Date</th><th>Country/Ocean</th><th>State/Province</th><th>Region</th><th>Sector</th><th>Exact Site</th><th>Latitude</th><th>Longitude</th><th>Elevation</th><th>Depth</th><th>Elevation Precision</th><th>Depth Precision</th><th>GPS Source</th><th>Coordinate Accuracy</th><th>Event Time</th><th>Collection Date Accuracy</th><th>Habitat</th><th>Sampling Protocol</th><th>Collection Notes</th><th>Site Code</th><th>Collection Event ID</th></tr>' );
 
-	$x = 0;
 	foreach ( $observationdata as $observation ) {
 		print( '<tr>' );
 			isset( $observation['collectors'] ) ? print( '<td>'.$observation['collectors'].'</td>' ) : print( '<td></td>' );
@@ -387,12 +429,96 @@ if ( $observationdata ) {
 			isset( $observation['site_code'] ) ? print( '<td>'.$observation['site_code'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['collection_event_id'] ) ? print( '<td>'.$observation['collection_event_id'].'</td>' ) : print( '<td></td>' );
 		print( '</tr>' );
-		$x++;
 	}
 	print( '</table>' );
 }
 ?>
-
 </div>
 </body>
 </html>
+<?php
+} else {
+	if ( $observationdata ) {
+		// Build our output data
+		$taxonomytable = [];
+		$detailstable = [];
+		$collectiontable = [];
+		foreach ( $observationdata as $observation ) {
+			$taxonomytable[] = array(
+				$observation['phylum'],
+				$observation['class'],
+				$observation['order'],
+				$observation['family'],
+				$observation['subfamily'],
+				$observation['genus'],
+				$observation['species'],
+				$observation['identifier'],
+				$observation['identifier_email'],
+				$observation['identifier_institution'],
+				$observation['identification_method'],
+				$observation['taxonomy_notes']
+			);
+		}
+		foreach ( $observationdata as $observation ) {
+			$detailstable[] = array(
+				$observation['sex'],
+				$observation['reproduction'],
+				$observation['life_stage'],
+				$observation['extra_info'],
+				$observation['notes'],
+				$observation['voucher_status'],
+				$observation['tissue_descriptor'],
+				$observation['associated_taxa'],
+				$observation['associated specimens'],
+				$observation['external_urls']
+			);
+		}
+		foreach ( $observationdata as $observation ) {
+			$collectiontable[] = array(
+				$observation['collectors'],
+				$observation['collection_date'],
+				$observation['country'],
+				$observation['state'],
+				$observation['region'],
+				$observation['sector'],
+				$observation['exact_site'],
+				$observation['latitude'],
+				$observation['longitude'],
+				$observation['elevation'],
+				$observation['depth'],
+				$observation['elevation_precision'],
+				$observation['depth_precision'],
+				$observation['gps_source'],
+				$observation['coordinate_accuracy'],
+				$observation['event_time'],
+				$observation['collection_date_accuracy'],
+				$observation['habitat'],
+				$observation['sampling_protocol'],
+				$observation['collection_notes'],
+				$observation['site_code'],
+				$observation['collection_event_id']
+			);
+		}
+		header( "Content-type: text/csv" );
+		header( "Cache-Control: no-store, no-cache" );
+		header( 'Content-Disposition: attachment; filename="SpecimenData.csv"' );
+		$fp = fopen( 'php://output', 'w' );
+		if ( $errors ) {
+			print( "Errors:\n" );
+			foreach ( $errors as $error ) {
+				print( $error . "\n" );
+			}
+			print( "\n" );
+		}
+		foreach( $taxonomytable as $array ) fputcsv( $fp, $array );
+		echo "\n";
+		foreach( $detailstable as $array ) fputcsv( $fp, $array );
+		echo "\n";
+		foreach( $collectiontable as $array ) fputcsv( $fp, $array );
+		fclose( $fp );
+	} else {
+		print( '<p id="errors">' );
+		print( "Error retrieving data." );
+		print( '</p>' );
+	}
+}
