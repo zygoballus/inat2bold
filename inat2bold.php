@@ -180,7 +180,8 @@ function get_observation_data( $observationid, $guessplace ) {
 		$inatdata = make_curl_request( $url );
 		if ( $inatdata && $inatdata['results'] && $inatdata['results'][0] ) {
 			$results = $inatdata['results'][0];
-			$montharray = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+			// Array numbering starts at 0 so the first element is empty.
+			$montharray = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 			$data['collection_date'] = $results['observed_on_details']['day'] . '-' . $montharray[$results['observed_on_details']['month']] . '-' . $results['observed_on_details']['year'];
 			$data['country'] = get_country( $results['place_ids'], $observationid );
 			$data['state'] = get_state( $results['place_ids'], $observationid );
