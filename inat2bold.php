@@ -58,13 +58,19 @@ function get_state( $placeids, $observationid ) {
 	}
 }
 
-function get_region( $placeids, $observationid ) {
+function get_region( $placeids, $country, $observationid ) {
 	global $inatapi, $errors;
 	$placelist = implode( ',', $placeids );
 	$url = $inatapi . 'places/' . $placelist . '?admin_level=20'; // admin_level 20 is county/region
 	$inatdata = make_curl_request( $url );
-	if ( $inatdata && $inatdata['results'] && $inatdata['results'][0] && $inatdata['results'][0]['name'] ) {
-		return $inatdata['results'][0]['name'];
+	if ( $inatdata && $inatdata['results'] && $inatdata['results'][0] ) {
+		// BOLD expects 'County', 'Parish', etc. in the county name, but iNat doesn't include it in the place name.
+		if ( $country === 'United States' ) {
+			$placenameparts = explode( ',', $inatdata['results'][0]['display_name'], 2 );
+			return $placenameparts[0];
+		} else {
+			return $inatdata['results'][0]['name'];
+		}
 	} else {
 		return null;
 	}
@@ -185,7 +191,7 @@ function get_observation_data( $observationid, $guessplace ) {
 			$data['collection_date'] = $results['observed_on_details']['day'] . '-' . $montharray[$results['observed_on_details']['month']] . '-' . $results['observed_on_details']['year'];
 			$data['country'] = get_country( $results['place_ids'], $observationid );
 			$data['state'] = get_state( $results['place_ids'], $observationid );
-			$data['region'] = get_region( $results['place_ids'], $observationid );
+			$data['region'] = get_region( $results['place_ids'], $data['country'], $observationid );
 			$taxonomy = get_taxonomy( $results['taxon']['ancestor_ids'] );
 			if ( $taxonomy ) {
 				$data = array_merge( $data, $taxonomy );
