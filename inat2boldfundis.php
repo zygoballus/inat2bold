@@ -148,6 +148,11 @@ function get_observation_data( $observationid, $guessplace ) {
 	global $inatapi, $errors;
 	// Initialize data
 	$data = array(
+		'sample_id'=>null,
+		'field_id'=>null,
+		'museum_id'=>null,
+		'collection_code'=>null,
+		'institution_storing'=>null,
 		'phylum'=>null,
 		'class'=>null,
 		'order'=>null,
@@ -218,7 +223,9 @@ function get_observation_data( $observationid, $guessplace ) {
 			$location = explode( ',', $results['location'] );
 			$data['latitude'] = $location[0];
 			$data['longitude'] = $location[1];
-			$data['coordinate_accuracy'] = $results['positional_accuracy'] . ' m';
+			if ( isset( $results['positional_accuracy'] ) ) {
+				$data['coordinate_accuracy'] = $results['positional_accuracy'] . ' m';
+			}
 			$data['external_urls'] = 'https://www.inaturalist.org/observations/' . $observationid;
 			$data['extra_info'] = 'iNat' . $observationid;
 			if ( isset( $results['ofvs'] ) ) {
