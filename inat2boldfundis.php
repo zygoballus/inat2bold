@@ -415,6 +415,7 @@ if ( $observationdata ) {
 
 	foreach ( $observationdata as $observation ) {
 		print( '<tr>' );
+			isset( $observation['sample_id'] ) ? print( '<td class="nowrap">'.$observation['sample_id'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['phylum'] ) ? print( '<td>'.$observation['phylum'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['class'] ) ? print( '<td>'.$observation['class'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['order'] ) ? print( '<td>'.$observation['order'].'</td>' ) : print( '<td></td>' );
@@ -438,6 +439,7 @@ if ( $observationdata ) {
 
 	foreach ( $observationdata as $observation ) {
 		print( '<tr>' );
+			isset( $observation['sample_id'] ) ? print( '<td class="nowrap">'.$observation['sample_id'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['sex'] ) ? print( '<td>'.$observation['sex'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['reproduction'] ) ? print( '<td>'.$observation['reproduction'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['life_stage'] ) ? print( '<td>'.$observation['life_stage'].'</td>' ) : print( '<td></td>' );
@@ -459,6 +461,7 @@ if ( $observationdata ) {
 
 	foreach ( $observationdata as $observation ) {
 		print( '<tr>' );
+			isset( $observation['sample_id'] ) ? print( '<td class="nowrap">'.$observation['sample_id'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['collectors'] ) ? print( '<td>'.$observation['collectors'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['collection_date'] ) ? print( '<td class="nowrap">'.$observation['collection_date'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['country'] ) ? print( '<td>'.$observation['country'].'</td>' ) : print( '<td></td>' );
@@ -508,6 +511,7 @@ if ( $observationdata ) {
 		}
 		foreach ( $observationdata as $observation ) {
 			$taxonomytable[] = array(
+				$observation['sample_id'],
 				$observation['phylum'],
 				$observation['class'],
 				$observation['order'],
@@ -524,6 +528,7 @@ if ( $observationdata ) {
 		}
 		foreach ( $observationdata as $observation ) {
 			$detailstable[] = array(
+				$observation['sample_id'],
 				$observation['sex'],
 				$observation['reproduction'],
 				$observation['life_stage'],
@@ -538,6 +543,7 @@ if ( $observationdata ) {
 		}
 		foreach ( $observationdata as $observation ) {
 			$collectiontable[] = array(
+				$observation['sample_id'],
 				$observation['collectors'],
 				$observation['collection_date'],
 				$observation['country'],
@@ -573,12 +579,16 @@ if ( $observationdata ) {
 			}
 			print( "\n" );
 		}
+		echo "Voucher Info\n";
 		foreach( $vouchertable as $array ) fputcsv( $fp, $array );
 		echo "\n";
+		echo "Taxonomy\n";
 		foreach( $taxonomytable as $array ) fputcsv( $fp, $array );
 		echo "\n";
+		echo "Specimen Details\n";
 		foreach( $detailstable as $array ) fputcsv( $fp, $array );
 		echo "\n";
+		echo "Collection Data\n";
 		foreach( $collectiontable as $array ) fputcsv( $fp, $array );
 		fclose( $fp );
 	} else {
