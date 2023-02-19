@@ -371,7 +371,7 @@ $(document).ready(function () {
 </p>
 <p class="optionaldata">
 	<input type="checkbox" id="fileoutput" name="fileoutput" <?php if ($fileoutput) echo "checked";?> value="yes">
-	<label for="fileoutput">Output data to CSV file.</label><br/>
+	<label for="fileoutput">Output data to Excel files.</label><br/>
 	<input type="checkbox" id="guess" name="guess" <?php if ($guess) echo "checked";?> value="yes">
 	<label for="guess">Map iNaturalist place guess to BOLD exact site.</label><br/>
 	Optional data (not supplied by iNaturalist):<br/>
