@@ -4,6 +4,8 @@ error_reporting( E_ALL );
 ini_set( 'display_errors', 1 );
 ini_set( 'max_execution_time', 900 );
 
+include 'SimpleXLSXGen.php';
+
 $useragent = 'iNat2BOLD Script/1.0';
 $inatapi = 'https://api.inaturalist.org/v1/';
 $errors = [];
@@ -150,6 +152,24 @@ function get_habitat( $ofvs ) {
 	return null;
 }
 
+function get_notes( $ofvs ) {
+	foreach ( $ofvs as $observation_field ) {
+		if ( $observation_field['name'] === 'Notes - Macrofungi' ) {
+			return $observation_field['value'];
+		}
+	}
+	return null;
+}
+
+function get_collection_notes( $ofvs ) {
+	foreach ( $ofvs as $observation_field ) {
+		if ( $observation_field['name'] === 'General Description of Location' ) {
+			return $observation_field['value'];
+		}
+	}
+	return null;
+}
+
 function get_observation_data( $observationid, $guessplace ) {
 	global $inatapi, $errors;
 	// Initialize data
@@ -234,9 +254,13 @@ function get_observation_data( $observationid, $guessplace ) {
 			}
 			$data['external_urls'] = 'https://www.inaturalist.org/observations/' . $observationid;
 			$data['extra_info'] = 'iNat' . $observationid;
+			$data['field_id'] = 'iNat' . $observationid;
 			if ( isset( $results['ofvs'] ) ) {
 				$data['sample_id'] = get_sample_id( $results['ofvs'] );
+				$data['collection_code'] = get_sample_id( $results['ofvs'] );
 				$data['habitat'] = get_habitat( $results['ofvs'] );
+				$data['notes'] = get_notes( $results['ofvs'] );
+				$data['collection_notes'] = get_collection_notes( $results['ofvs'] );
 			}
 			return $data;
 		} else {
@@ -286,7 +310,6 @@ if ( $_POST ) {
 		}
 	}
 }
-if ( !$fileoutput ) {
 ?>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -392,114 +415,109 @@ if ( $errors ) {
 	print( '</p>' );
 }
 if ( $observationdata ) {
-	// Voucher Info Table
-	print( '<h2>Voucher Info</h2>' );
-	print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
-	print( '<tr><th>Sample ID</th><th>Field ID</th><th>Museum ID</th><th>Collection Code</th><th>Institution Storing</th></tr>' );
+	if ( !$fileoutput ) {
+		// Voucher Info Table
+		print( '<h2>Voucher Info</h2>' );
+		print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
+		print( '<tr><th>Sample ID</th><th>Field ID</th><th>Museum ID</th><th>Collection Code</th><th>Institution Storing</th></tr>' );
 
-	foreach ( $observationdata as $observation ) {
-		print( '<tr>' );
-			isset( $observation['sample_id'] ) ? print( '<td class="nowrap">'.$observation['sample_id'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['field_id'] ) ? print( '<td class="nowrap">'.$observation['field_id'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['museum_id'] ) ? print( '<td class="nowrap">'.$observation['museum_id'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['collection_code'] ) ? print( '<td class="nowrap">'.$observation['collection_code'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['institution_storing'] ) ? print( '<td>'.$observation['institution_storing'].'</td>' ) : print( '<td></td>' );
-		print( '</tr>' );
-	}
-	print( '</table>' );
+		foreach ( $observationdata as $observation ) {
+			print( '<tr>' );
+				isset( $observation['sample_id'] ) ? print( '<td class="nowrap">'.$observation['sample_id'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['field_id'] ) ? print( '<td class="nowrap">'.$observation['field_id'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['museum_id'] ) ? print( '<td class="nowrap">'.$observation['museum_id'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['collection_code'] ) ? print( '<td class="nowrap">'.$observation['collection_code'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['institution_storing'] ) ? print( '<td>'.$observation['institution_storing'].'</td>' ) : print( '<td></td>' );
+			print( '</tr>' );
+		}
+		print( '</table>' );
 
-	// Taxonomy Table
-	print( '<h2>Taxonomy</h2>' );
-	print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
-	print( '<tr><th>Phylum</th><th>Class</th><th>Order</th><th>Family</th><th>Subfamily</th><th>Genus</th><th>Species</th><th>Identifier</th><th>Identifier Email</th><th>Identifier Institution</th><th>Identification Method</th><th>Taxonomy Notes</th></tr>' );
+		// Taxonomy Table
+		print( '<h2>Taxonomy</h2>' );
+		print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
+		print( '<tr><th>Sample ID</th><th>Phylum</th><th>Class</th><th>Order</th><th>Family</th><th>Subfamily</th><th>Genus</th><th>Species</th><th>Identifier</th><th>Identifier Email</th><th>Identifier Institution</th><th>Identification Method</th><th>Taxonomy Notes</th></tr>' );
 
-	foreach ( $observationdata as $observation ) {
-		print( '<tr>' );
-			isset( $observation['sample_id'] ) ? print( '<td class="nowrap">'.$observation['sample_id'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['phylum'] ) ? print( '<td>'.$observation['phylum'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['class'] ) ? print( '<td>'.$observation['class'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['order'] ) ? print( '<td>'.$observation['order'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['family'] ) ? print( '<td>'.$observation['family'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['subfamily'] ) ? print( '<td>'.$observation['subfamily'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['genus'] ) ? print( '<td>'.$observation['genus'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['species'] ) ? print( '<td>'.$observation['species'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['identifier'] ) ? print( '<td>'.$observation['identifier'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['identifier_email'] ) ? print( '<td>'.$observation['identifier_email'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['identifier_institution'] ) ? print( '<td>'.$observation['identifier_institution'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['identification_method'] ) ? print( '<td>'.$observation['identification_method'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['taxonomy_notes'] ) ? print( '<td>'.$observation['taxonomy_notes'].'</td>' ) : print( '<td></td>' );
-		print( '</tr>' );
-	}
-	print( '</table>' );
+		foreach ( $observationdata as $observation ) {
+			print( '<tr>' );
+				isset( $observation['sample_id'] ) ? print( '<td class="nowrap">'.$observation['sample_id'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['phylum'] ) ? print( '<td>'.$observation['phylum'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['class'] ) ? print( '<td>'.$observation['class'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['order'] ) ? print( '<td>'.$observation['order'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['family'] ) ? print( '<td>'.$observation['family'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['subfamily'] ) ? print( '<td>'.$observation['subfamily'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['genus'] ) ? print( '<td>'.$observation['genus'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['species'] ) ? print( '<td>'.$observation['species'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['identifier'] ) ? print( '<td>'.$observation['identifier'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['identifier_email'] ) ? print( '<td>'.$observation['identifier_email'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['identifier_institution'] ) ? print( '<td>'.$observation['identifier_institution'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['identification_method'] ) ? print( '<td>'.$observation['identification_method'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['taxonomy_notes'] ) ? print( '<td>'.$observation['taxonomy_notes'].'</td>' ) : print( '<td></td>' );
+			print( '</tr>' );
+		}
+		print( '</table>' );
 
-	// Specimen Details Table
-	print( '<h2>Specimen Details</h2>' );
-	print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
-	print( '<tr><th>Sex</th><th>Reproduction</th><th>Life Stage</th><th>Extra Info</th><th>Notes</th><th>Voucher Status</th><th>Tissue Descriptor</th><th>Associated Taxa</th><th>Associated Specimens</th><th>External URLs</th></tr>' );
+		// Specimen Details Table
+		print( '<h2>Specimen Details</h2>' );
+		print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
+		print( '<tr><th>Sample ID</th><th>Sex</th><th>Reproduction</th><th>Life Stage</th><th>Extra Info</th><th>Notes</th><th>Voucher Status</th><th>Tissue Descriptor</th><th>Associated Taxa</th><th>Associated Specimens</th><th>External URLs</th></tr>' );
 
-	foreach ( $observationdata as $observation ) {
-		print( '<tr>' );
-			isset( $observation['sample_id'] ) ? print( '<td class="nowrap">'.$observation['sample_id'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['sex'] ) ? print( '<td>'.$observation['sex'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['reproduction'] ) ? print( '<td>'.$observation['reproduction'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['life_stage'] ) ? print( '<td>'.$observation['life_stage'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['extra_info'] ) ? print( '<td>'.$observation['extra_info'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['notes'] ) ? print( '<td>'.$observation['notes'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['voucher_status'] ) ? print( '<td>'.$observation['voucher_status'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['tissue_descriptor'] ) ? print( '<td>'.$observation['tissue_descriptor'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['associated_taxa'] ) ? print( '<td>'.$observation['associated_taxa'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['associated specimens'] ) ? print( '<td>'.$observation['associated specimens'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['external_urls'] ) ? print( '<td>'.$observation['external_urls'].'</td>' ) : print( '<td></td>' );
-		print( '</tr>' );
-	}
-	print( '</table>' );
+		foreach ( $observationdata as $observation ) {
+			print( '<tr>' );
+				isset( $observation['sample_id'] ) ? print( '<td class="nowrap">'.$observation['sample_id'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['sex'] ) ? print( '<td>'.$observation['sex'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['reproduction'] ) ? print( '<td>'.$observation['reproduction'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['life_stage'] ) ? print( '<td>'.$observation['life_stage'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['extra_info'] ) ? print( '<td>'.$observation['extra_info'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['notes'] ) ? print( '<td>'.$observation['notes'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['voucher_status'] ) ? print( '<td>'.$observation['voucher_status'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['tissue_descriptor'] ) ? print( '<td>'.$observation['tissue_descriptor'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['associated_taxa'] ) ? print( '<td>'.$observation['associated_taxa'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['associated specimens'] ) ? print( '<td>'.$observation['associated specimens'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['external_urls'] ) ? print( '<td>'.$observation['external_urls'].'</td>' ) : print( '<td></td>' );
+			print( '</tr>' );
+		}
+		print( '</table>' );
 
-	// Collection Data Table
-	print( '<h2>Collection Data</h2>' );
-	print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
-	print( '<tr><th>Collectors</th><th>Collection Date</th><th>Country/Ocean</th><th>State/Province</th><th>Region</th><th>Sector</th><th>Exact Site</th><th>Latitude</th><th>Longitude</th><th>Elevation</th><th>Depth</th><th>Elevation Precision</th><th>Depth Precision</th><th>GPS Source</th><th>Coordinate Accuracy</th><th>Event Time</th><th>Collection Date Accuracy</th><th>Habitat</th><th>Sampling Protocol</th><th>Collection Notes</th><th>Site Code</th><th>Collection Event ID</th></tr>' );
+		// Collection Data Table
+		print( '<h2>Collection Data</h2>' );
+		print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
+		print( '<tr><th>Sample ID</th><th>Collectors</th><th>Collection Date</th><th>Country/Ocean</th><th>State/Province</th><th>Region</th><th>Sector</th><th>Exact Site</th><th>Latitude</th><th>Longitude</th><th>Elevation</th><th>Depth</th><th>Elevation Precision</th><th>Depth Precision</th><th>GPS Source</th><th>Coordinate Accuracy</th><th>Event Time</th><th>Collection Date Accuracy</th><th>Habitat</th><th>Sampling Protocol</th><th>Collection Notes</th><th>Site Code</th><th>Collection Event ID</th></tr>' );
 
-	foreach ( $observationdata as $observation ) {
-		print( '<tr>' );
-			isset( $observation['sample_id'] ) ? print( '<td class="nowrap">'.$observation['sample_id'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['collectors'] ) ? print( '<td>'.$observation['collectors'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['collection_date'] ) ? print( '<td class="nowrap">'.$observation['collection_date'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['country'] ) ? print( '<td>'.$observation['country'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['state'] ) ? print( '<td>'.$observation['state'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['region'] ) ? print( '<td>'.$observation['region'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['sector'] ) ? print( '<td>'.$observation['sector'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['exact_site'] ) ? print( '<td>'.$observation['exact_site'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['latitude'] ) ? print( '<td>'.$observation['latitude'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['longitude'] ) ? print( '<td>'.$observation['longitude'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['elevation'] ) ? print( '<td class="nowrap">'.$observation['elevation'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['depth'] ) ? print( '<td class="nowrap">'.$observation['depth'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['elevation_precision'] ) ? print( '<td>'.$observation['elevation_precision'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['depth_precision'] ) ? print( '<td>'.$observation['depth_precision'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['gps_source'] ) ? print( '<td>'.$observation['gps_source'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['coordinate_accuracy'] ) ? print( '<td>'.$observation['coordinate_accuracy'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['event_time'] ) ? print( '<td>'.$observation['event_time'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['collection_date_accuracy'] ) ? print( '<td>'.$observation['collection_date_accuracy'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['habitat'] ) ? print( '<td>'.$observation['habitat'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['sampling_protocol'] ) ? print( '<td>'.$observation['sampling_protocol'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['collection_notes'] ) ? print( '<td>'.$observation['collection_notes'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['site_code'] ) ? print( '<td>'.$observation['site_code'].'</td>' ) : print( '<td></td>' );
-			isset( $observation['collection_event_id'] ) ? print( '<td>'.$observation['collection_event_id'].'</td>' ) : print( '<td></td>' );
-		print( '</tr>' );
-	}
-	print( '</table>' );
-}
-?>
-</div>
-</body>
-</html>
-<?php
-} else {
-	if ( $observationdata ) {
-		// Build our output data
+		foreach ( $observationdata as $observation ) {
+			print( '<tr>' );
+				isset( $observation['sample_id'] ) ? print( '<td class="nowrap">'.$observation['sample_id'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['collectors'] ) ? print( '<td>'.$observation['collectors'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['collection_date'] ) ? print( '<td class="nowrap">'.$observation['collection_date'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['country'] ) ? print( '<td>'.$observation['country'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['state'] ) ? print( '<td>'.$observation['state'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['region'] ) ? print( '<td>'.$observation['region'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['sector'] ) ? print( '<td>'.$observation['sector'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['exact_site'] ) ? print( '<td>'.$observation['exact_site'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['latitude'] ) ? print( '<td>'.$observation['latitude'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['longitude'] ) ? print( '<td>'.$observation['longitude'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['elevation'] ) ? print( '<td class="nowrap">'.$observation['elevation'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['depth'] ) ? print( '<td class="nowrap">'.$observation['depth'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['elevation_precision'] ) ? print( '<td>'.$observation['elevation_precision'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['depth_precision'] ) ? print( '<td>'.$observation['depth_precision'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['gps_source'] ) ? print( '<td>'.$observation['gps_source'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['coordinate_accuracy'] ) ? print( '<td>'.$observation['coordinate_accuracy'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['event_time'] ) ? print( '<td>'.$observation['event_time'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['collection_date_accuracy'] ) ? print( '<td>'.$observation['collection_date_accuracy'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['habitat'] ) ? print( '<td>'.$observation['habitat'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['sampling_protocol'] ) ? print( '<td>'.$observation['sampling_protocol'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['collection_notes'] ) ? print( '<td>'.$observation['collection_notes'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['site_code'] ) ? print( '<td>'.$observation['site_code'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['collection_event_id'] ) ? print( '<td>'.$observation['collection_event_id'].'</td>' ) : print( '<td></td>' );
+			print( '</tr>' );
+		}
+		print( '</table>' );
+	} else {
+		// Build our output data for the files
 		$vouchertable = [];
 		$taxonomytable = [];
 		$detailstable = [];
 		$collectiontable = [];
+		$vouchertable[] = ['Sample ID', 'Field ID', 'Museum ID', 'Collection Code', 'Institution Storing'];
 		foreach ( $observationdata as $observation ) {
 			$vouchertable[] = array(
 				$observation['sample_id'],
@@ -509,6 +527,7 @@ if ( $observationdata ) {
 				$observation['institution_storing']
 			);
 		}
+		$taxonomytable[] = ['Sample ID', 'Phylum', 'Class', 'Order', 'Family', 'Subfamily', 'Genus', 'Species', 'Identifier', 'Identifier Email', 'Identifier Institution', 'Identification Method', 'Taxonomy Notes'];
 		foreach ( $observationdata as $observation ) {
 			$taxonomytable[] = array(
 				$observation['sample_id'],
@@ -526,6 +545,7 @@ if ( $observationdata ) {
 				$observation['taxonomy_notes']
 			);
 		}
+		$detailstable[] = ['Sample ID', 'Sex', 'Reproduction', 'Life Stage', 'Extra Info', 'Notes', 'Voucher Status', 'Tissue Descriptor', 'Associated Taxa', 'Associated Specimens', 'External URLs'];
 		foreach ( $observationdata as $observation ) {
 			$detailstable[] = array(
 				$observation['sample_id'],
@@ -541,6 +561,7 @@ if ( $observationdata ) {
 				$observation['external_urls']
 			);
 		}
+		$collectiontable[] = ['Sample ID', 'Collectors', 'Collection Date', 'Country/Ocean', 'State/Province', 'Region', 'Sector', 'Exact Site', 'Latitude', 'Longitude', 'Elevation', 'Depth', 'Elevation Precision', 'Depth Precision', 'GPS Source', 'Coordinate Accuracy', 'Event Time', 'Collection Date Accuracy', 'Habitat', 'Sampling Protocol', 'Collection Notes', 'Site Code', 'Collection Event ID'];
 		foreach ( $observationdata as $observation ) {
 			$collectiontable[] = array(
 				$observation['sample_id'],
@@ -568,32 +589,25 @@ if ( $observationdata ) {
 				$observation['collection_event_id']
 			);
 		}
-		header( "Content-type: text/csv" );
-		header( "Cache-Control: no-store, no-cache" );
-		header( 'Content-Disposition: attachment; filename="SpecimenData.csv"' );
-		$fp = fopen( 'php://output', 'w' );
-		if ( $errors ) {
-			print( "Errors:\n" );
-			foreach ( $errors as $error ) {
-				print( $error . "\n" );
-			}
-			print( "\n" );
-		}
-		echo "Voucher Info\n";
-		foreach( $vouchertable as $array ) fputcsv( $fp, $array );
-		echo "\n";
-		echo "Taxonomy\n";
-		foreach( $taxonomytable as $array ) fputcsv( $fp, $array );
-		echo "\n";
-		echo "Specimen Details\n";
-		foreach( $detailstable as $array ) fputcsv( $fp, $array );
-		echo "\n";
-		echo "Collection Data\n";
-		foreach( $collectiontable as $array ) fputcsv( $fp, $array );
-		fclose( $fp );
-	} else {
-		print( '<p id="errors">' );
-		print( "Error retrieving data." );
-		print( '</p>' );
+		$xlsx1 = Shuchkin\SimpleXLSXGen::fromArray( $vouchertable );
+		$xlsx1->saveAs('files/VoucherInfo.xlsx');
+		$xlsx2 = Shuchkin\SimpleXLSXGen::fromArray( $taxonomytable );
+		$xlsx2->saveAs('files/Taxonomy.xlsx');
+		$xlsx3 = Shuchkin\SimpleXLSXGen::fromArray( $detailstable );
+		$xlsx3->saveAs('files/SpecimenDetails.xlsx');
+		$xlsx3 = Shuchkin\SimpleXLSXGen::fromArray( $collectiontable );
+		$xlsx3->saveAs('files/CollectionData.xlsx');
+?>
+<p>
+<a href="files/VoucherInfo.xlsx">VoucherInfo.xlsx</a><br/>
+<a href="files/Taxonomy.xlsx">Taxonomy.xlsx</a><br/>
+<a href="files/SpecimenDetails.xlsx">SpecimenDetails.xlsx</a><br/>
+<a href="files/CollectionData.xlsx">CollectionData.xlsx</a><br/>
+</p>
+<?php
 	}
 }
+?>
+</div>
+</body>
+</html>
