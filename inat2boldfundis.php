@@ -304,7 +304,7 @@ if ( $_POST ) {
 				$observationdata[$a] = null;
 			}
 			if ( count( $observationlist ) > 1 ) {
-				sleep(2);
+				sleep(3);
 			}
 			$a++;
 		}
@@ -590,19 +590,19 @@ if ( $observationdata ) {
 			);
 		}
 		$xlsx1 = Shuchkin\SimpleXLSXGen::fromArray( $vouchertable );
-		$xlsx1->saveAs('files/VoucherInfo.xlsx');
+		$xlsx1->saveAs('VoucherInfo.xlsx');
 		$xlsx2 = Shuchkin\SimpleXLSXGen::fromArray( $taxonomytable );
-		$xlsx2->saveAs('files/Taxonomy.xlsx');
+		$xlsx2->saveAs('Taxonomy.xlsx');
 		$xlsx3 = Shuchkin\SimpleXLSXGen::fromArray( $detailstable );
-		$xlsx3->saveAs('files/SpecimenDetails.xlsx');
+		$xlsx3->saveAs('SpecimenDetails.xlsx');
 		$xlsx3 = Shuchkin\SimpleXLSXGen::fromArray( $collectiontable );
-		$xlsx3->saveAs('files/CollectionData.xlsx');
+		$xlsx3->saveAs('CollectionData.xlsx');
 ?>
 <p>
-<a href="files/VoucherInfo.xlsx">VoucherInfo.xlsx</a><br/>
-<a href="files/Taxonomy.xlsx">Taxonomy.xlsx</a><br/>
-<a href="files/SpecimenDetails.xlsx">SpecimenDetails.xlsx</a><br/>
-<a href="files/CollectionData.xlsx">CollectionData.xlsx</a><br/>
+<a href="VoucherInfo.xlsx">VoucherInfo.xlsx</a><br/>
+<a href="Taxonomy.xlsx">Taxonomy.xlsx</a><br/>
+<a href="SpecimenDetails.xlsx">SpecimenDetails.xlsx</a><br/>
+<a href="CollectionData.xlsx">CollectionData.xlsx</a><br/>
 </p>
 <?php
 	}

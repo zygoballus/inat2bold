@@ -252,7 +252,7 @@ if ( $_POST ) {
 				$observationdata[$a] = null;
 			}
 			if ( count( $observationlist ) > 1 ) {
-				sleep(2);
+				sleep(3);
 			}
 			$a++;
 		}
