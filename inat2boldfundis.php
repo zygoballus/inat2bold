@@ -235,6 +235,7 @@ function get_observation_data( $observationid, $guessplace ) {
 			$data['country'] = get_country( $results['place_ids'], $observationid );
 			$data['state'] = get_state( $results['place_ids'], $observationid );
 			$data['region'] = get_region( $results['place_ids'], $data['country'], $observationid );
+			$data['collectors'] = $results['user']['name'];
 			$taxonomy = get_taxonomy( $results['taxon']['ancestor_ids'] );
 			if ( $taxonomy ) {
 				$data = array_merge( $data, $taxonomy );
@@ -391,8 +392,6 @@ $(document).ready(function () {
 	<input type="text" id="voucher_status" name="voucher_status" /><br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;<label for="tissue_descriptor">Tissue descriptor:</label>
 	<input type="text" id="tissue_descriptor" name="tissue_descriptor" /><br/>
-	&nbsp;&nbsp;&nbsp;&nbsp;<label for="collectors">Collectors:</label>
-	<input type="text" id="collectors" name="collectors" /><br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;<label for="gps_source">GPS source:</label>
 	<input type="text" id="gps_source" name="gps_source" /><br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;<label for="sampling_protocol">Sampling protocol:</label>
