@@ -12,6 +12,7 @@ $errors = [];
 $observationdata = [];
 $guess = true;
 $fileoutput = false;
+$logging = false;
 
 /**
  * Make curl request using the passed URL
@@ -20,13 +21,26 @@ $fileoutput = false;
  * @return array|null
  */
 function make_curl_request( $url = null ) {
-	global $useragent;
+	global $useragent, $logging;
 	$curl = curl_init();
     if ( $curl && $url ) {
         curl_setopt( $curl, CURLOPT_URL, $url );
         curl_setopt( $curl, CURLOPT_USERAGENT, $useragent );
         curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
         $out = curl_exec( $curl );
+		if  ( $logging ) {
+			if ( curl_error( $curl ) ) {
+				$loghandle = fopen('log.txt', 'w');
+				fwrite( $loghandle, curl_error( $curl ) ) . "\n";
+				fclose( $loghandle );
+			} else {
+				$info = curl_getinfo( $curl );
+				$logtext = 'Took ' . $info['total_time'] . ' seconds to send a request to ' . $info['url'] . "\n";
+				$loghandle = fopen('log.txt', 'w');
+				fwrite( $loghandle, $logtext );
+				fclose( $loghandle );
+			}
+		}
         $object = json_decode( $out );
         return json_decode( json_encode( $object ), true );
     } else {
@@ -305,7 +319,7 @@ if ( $_POST ) {
 				$observationdata[$a] = null;
 			}
 			if ( count( $observationlist ) > 1 ) {
-				sleep(3);
+				sleep(5);
 			}
 			$a++;
 		}
