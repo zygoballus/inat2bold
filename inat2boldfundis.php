@@ -13,6 +13,7 @@ $observationdata = [];
 $guess = true;
 $fileoutput = false;
 $logging = false;
+$sleeptime = 5;
 
 /**
  * Make curl request using the passed URL
@@ -318,7 +319,7 @@ if ( $_POST ) {
 				$observationdata[$a] = null;
 			}
 			if ( count( $observationlist ) > 1 ) {
-				sleep(5);
+				sleep( $sleeptime );
 			}
 			$a++;
 		}
