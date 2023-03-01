@@ -21,7 +21,7 @@ $logging = false;
  * @return array|null
  */
 function make_curl_request( $url = null ) {
-	global $useragent, $logging;
+	global $useragent, $logging, $loghandle;
 	$curl = curl_init();
     if ( $curl && $url ) {
         curl_setopt( $curl, CURLOPT_URL, $url );
@@ -30,15 +30,11 @@ function make_curl_request( $url = null ) {
         $out = curl_exec( $curl );
 		if  ( $logging ) {
 			if ( curl_error( $curl ) ) {
-				$loghandle = fopen('log.txt', 'w');
 				fwrite( $loghandle, curl_error( $curl ) ) . "\n";
-				fclose( $loghandle );
 			} else {
 				$info = curl_getinfo( $curl );
 				$logtext = 'Took ' . $info['total_time'] . ' seconds to send a request to ' . $info['url'] . "\n";
-				$loghandle = fopen('log.txt', 'w');
 				fwrite( $loghandle, $logtext );
-				fclose( $loghandle );
 			}
 		}
         $object = json_decode( $out );
@@ -294,6 +290,9 @@ if ( $_POST ) {
 		$observationlist = explode( "\n", $_POST['observations'] );
 		// Limit to 96 observations.
 		$observationlist = array_slice( $observationlist, 0, 96 );
+		if  ( $logging ) {
+			$loghandle = fopen( 'log.txt', 'w' );
+		}
 		$a = 0;
 		foreach ( $observationlist as $observationid ) {
 			if ( preg_match( '/\d+/', $observationid, $matches ) ) {
@@ -322,6 +321,9 @@ if ( $_POST ) {
 				sleep(5);
 			}
 			$a++;
+		}
+		if  ( $logging ) {
+			fclose( $loghandle );
 		}
 	}
 }
