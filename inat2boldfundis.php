@@ -12,7 +12,6 @@ $errors = [];
 $observationdata = [];
 $guess = true;
 $fileoutput = false;
-$logging = false;
 $sleeptime = 1;
 
 /**
@@ -22,22 +21,13 @@ $sleeptime = 1;
  * @return array|null
  */
 function make_curl_request( $url = null ) {
-	global $useragent, $logging, $loghandle;
+	global $useragent, $errors;
 	$curl = curl_init();
     if ( $curl && $url ) {
         curl_setopt( $curl, CURLOPT_URL, $url );
         curl_setopt( $curl, CURLOPT_USERAGENT, $useragent );
         curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
         $out = curl_exec( $curl );
-		if  ( $logging ) {
-			if ( curl_error( $curl ) ) {
-				fwrite( $loghandle, curl_error( $curl ) ) . "\n";
-			} else {
-				$info = curl_getinfo( $curl );
-				$logtext = 'Took ' . $info['total_time'] . ' seconds to send a request to ' . $info['url'] . "\n";
-				fwrite( $loghandle, $logtext );
-			}
-		}
 		if ( $out ) {
         	$object = json_decode( $out );
         	return json_decode( json_encode( $object ), true );
@@ -296,14 +286,12 @@ function get_observation_data( $observationid, $guessplace ) {
 if ( $_POST ) {
 	// If an observation was posted, look up the data.
 	if ( isset( $_POST['observations'] ) ) {
+		$start_time = microtime( true );
 		$guessplace = isset( $_POST['guess'] ) ? true : false;
 		$fileoutput = isset( $_POST['fileoutput'] ) ? true : false;
 		$observationlist = explode( "\n", $_POST['observations'] );
 		// Limit to 96 observations.
 		$observationlist = array_slice( $observationlist, 0, 96 );
-		if  ( $logging ) {
-			$loghandle = fopen( 'log.txt', 'w' );
-		}
 		$a = 0;
 		foreach ( $observationlist as $observationid ) {
 			if ( preg_match( '/\d+/', $observationid, $matches ) ) {
@@ -333,9 +321,8 @@ if ( $_POST ) {
 			}
 			$a++;
 		}
-		if  ( $logging ) {
-			fclose( $loghandle );
-		}
+		$end_time = microtime( true );
+		$execution_time = ( $end_time - $start_time );
 	}
 }
 ?>
@@ -537,6 +524,7 @@ if ( $observationdata ) {
 			print( '</tr>' );
 		}
 		print( '</table>' );
+		print( '<p>Execution time of script: ' . $execution_time . ' seconds.</p>';
 	} else {
 		// Build our output data for the files
 		$vouchertable = [];
