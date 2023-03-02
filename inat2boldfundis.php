@@ -286,8 +286,8 @@ if ( $_POST ) {
 		$guessplace = isset( $_POST['guess'] ) ? true : false;
 		$fileoutput = isset( $_POST['fileoutput'] ) ? true : false;
 		$observationlist = explode( "\n", $_POST['observations'] );
-		// Limit to 96 observations.
-		$observationlist = array_slice( $observationlist, 0, 96 );
+		// Limit to 95 observations.
+		$observationlist = array_slice( $observationlist, 0, 95 );
 		$a = 0;
 		foreach ( $observationlist as $observationid ) {
 			if ( preg_match( '/\d+/', $observationid, $matches ) ) {
@@ -378,7 +378,7 @@ $(document).ready(function () {
 <div id="content">
 <form id="lookupform" action="inat2boldfundis.php" method="post">
 <p>
-	Observation List (1 per line, max 96):<br/><textarea rows="5" cols="50" name="observations"></textarea>
+	Observation List (1 per line, max 95):<br/><textarea rows="5" cols="50" name="observations"></textarea>
 </p>
 <p class="optionaldata">
 	<input type="checkbox" id="fileoutput" name="fileoutput" <?php if ($fileoutput) echo "checked";?> value="yes">
