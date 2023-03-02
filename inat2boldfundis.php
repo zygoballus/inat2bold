@@ -524,7 +524,7 @@ if ( $observationdata ) {
 			print( '</tr>' );
 		}
 		print( '</table>' );
-		print( '<p>Execution time of script: ' . $execution_time . ' seconds.</p>';
+		print( '<p>Execution time of script: ' . $execution_time . ' seconds.</p>' );
 	} else {
 		// Build our output data for the files
 		$vouchertable = [];
