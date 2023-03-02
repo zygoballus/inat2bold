@@ -12,7 +12,7 @@ $errors = [];
 $observationdata = [];
 $guess = true;
 $fileoutput = false;
-$sleeptime = 1;
+$sleeptime = 5;
 
 /**
  * Make curl request using the passed URL
@@ -33,11 +33,11 @@ function make_curl_request( $url = null ) {
         	if ( $object ) {
         		return json_decode( json_encode( $object ), true );
         	} else {
-        		$errors[] = 'json_decode failed for ' . $url . '. ' . curl_error( $curl );
-        		var_dump($out);
+        		$errors[] = 'API request failed. ' . curl_error( $curl );
+        		return null;
         	}
         } else {
-        	$errors[] = 'API request failed for ' . $url . '. ' . curl_error( $curl );
+        	$errors[] = 'API request failed. ' . curl_error( $curl );
         	return null;
         }
     } else {
@@ -526,7 +526,7 @@ if ( $observationdata ) {
 			print( '</tr>' );
 		}
 		print( '</table>' );
-		print( '<p>Execution time of script: ' . $execution_time . ' seconds.</p>' );
+		print( '<p>Execution time: ' . $execution_time . ' seconds.</p>' );
 	} else {
 		// Build our output data for the files
 		$vouchertable = [];
