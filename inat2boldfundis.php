@@ -30,7 +30,12 @@ function make_curl_request( $url = null ) {
         $out = curl_exec( $curl );
 		if ( $out ) {
         	$object = json_decode( $out );
-        	return json_decode( json_encode( $object ), true );
+        	if ( $object ) {
+        		return json_decode( json_encode( $object ), true );
+        	} else {
+        		$errors[] = 'json_decode failed for ' . $url . '. ' . curl_error( $curl );
+        		var_dump($out);
+        	}
         } else {
         	$errors[] = 'API request failed for ' . $url . '. ' . curl_error( $curl );
         	return null;
@@ -50,7 +55,6 @@ function get_country( $placeids, $observationid ) {
 		return $inatdata['results'][0]['name'];
 	} else {
 		$errors[] = 'Country not found for observation ' . $observationid . '.';
-		var_dump( $inatdata );
 		return null;
 	}
 }
@@ -64,7 +68,6 @@ function get_state( $placeids, $observationid ) {
 		return $inatdata['results'][0]['name'];
 	} else {
 		$errors[] = 'State not found for observation ' . $observationid . '.';
-		var_dump( $inatdata );
 		return null;
 	}
 }
@@ -122,7 +125,6 @@ function get_taxonomy( $ancestorids, $observationid ) {
 		return $taxonomy;
 	} else {
 		$errors[] = 'Taxonomy not found for observation ' . $observationid . '.';
-		var_dump( $inatdata );
 		return null;
 	}
 }
