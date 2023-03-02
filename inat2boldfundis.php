@@ -54,6 +54,7 @@ function get_country( $placeids, $observationid ) {
 		return $inatdata['results'][0]['name'];
 	} else {
 		$errors[] = 'Country not found for observation ' . $observationid . '.';
+		var_dump( $inatdata );
 		return null;
 	}
 }
@@ -67,6 +68,7 @@ function get_state( $placeids, $observationid ) {
 		return $inatdata['results'][0]['name'];
 	} else {
 		$errors[] = 'State not found for observation ' . $observationid . '.';
+		var_dump( $inatdata );
 		return null;
 	}
 }
@@ -89,7 +91,7 @@ function get_region( $placeids, $country, $observationid ) {
 	}
 }
 
-function get_taxonomy( $ancestorids ) {
+function get_taxonomy( $ancestorids, $observationid ) {
 	global $inatapi, $errors;
 	$ancestorlist = implode( ',', $ancestorids );
 	$url = $inatapi . 'taxa/' . $ancestorlist;
@@ -123,6 +125,8 @@ function get_taxonomy( $ancestorids ) {
 		}
 		return $taxonomy;
 	} else {
+		$errors[] = 'Taxonomy not found for observation ' . $observationid . '.';
+		var_dump( $inatdata );
 		return null;
 	}
 }
@@ -247,7 +251,7 @@ function get_observation_data( $observationid, $guessplace ) {
 			$data['state'] = get_state( $results['place_ids'], $observationid );
 			$data['region'] = get_region( $results['place_ids'], $data['country'], $observationid );
 			$data['collectors'] = $results['user']['name'];
-			$taxonomy = get_taxonomy( $results['taxon']['ancestor_ids'] );
+			$taxonomy = get_taxonomy( $results['taxon']['ancestor_ids'], $observationid );
 			if ( $taxonomy ) {
 				$data = array_merge( $data, $taxonomy );
 			}
