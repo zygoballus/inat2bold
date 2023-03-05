@@ -331,7 +331,7 @@ $(document).ready(function () {
 </head>
 <body>
 <div id="content">
-<form id="lookupform" action="inat2boldfundis.php" method="post">
+<form id="lookupform" action="inat2bold.php" method="post">
 <p>
 	Observation List (1 per line, max 95):<br/><textarea rows="5" cols="50" name="observations"></textarea>
 </p>
