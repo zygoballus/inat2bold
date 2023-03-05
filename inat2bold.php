@@ -248,6 +248,7 @@ if ( $_POST ) {
 				$observationid = $matches[0];
 				$observationdata[$a] = get_observation_data( $observationid, $guessplace );
 				if ( $observationdata[$a] ) {
+					if ( isset( $_POST['institution_storing'] ) ) $observationdata[$a]['institution_storing'] = $_POST['institution_storing'];
 					if ( isset( $_POST['identifier'] ) ) $observationdata[$a]['identifier'] = $_POST['identifier'];
 					if ( isset( $_POST['identifier_email'] ) ) $observationdata[$a]['identifier_email'] = $_POST['identifier_email'];
 					if ( isset( $_POST['identifier_institution'] ) ) $observationdata[$a]['identifier_institution'] = $_POST['identifier_institution'];
@@ -340,6 +341,8 @@ $(document).ready(function () {
 	<input type="checkbox" id="guess" name="guess" <?php if ($guess) echo "checked";?> value="yes">
 	<label for="guess">Map iNaturalist place guess to BOLD exact site.</label><br/>
 	Optional data (not supplied by iNaturalist):<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;<label for="institution_storing">Institution Storing:</label>
+	<input type="text" id="institution_storing" name="institution_storing" /><br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;<label for="identifier">Identifier:</label>
 	<input type="text" id="identifier" name="identifier" /><br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;<label for="identifier_email">Identifier email:</label>
