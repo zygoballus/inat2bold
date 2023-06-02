@@ -115,6 +115,9 @@ function get_taxonomy( $ancestorids, $observationid ) {
 				case 'species':
 					$taxonomy['species'] = $taxon['name'];
 					break;
+				case 'subspecies':
+					$taxonomy['subspecies'] = $taxon['name'];
+					break;
 			}
 		}
 		return $taxonomy;
@@ -168,6 +171,7 @@ function get_observation_data( $observationid, $guessplace ) {
 		'tribe'=>null,
 		'genus'=>null,
 		'species'=>null,
+		'subspecies'=>null,
 		'identifier'=>null,
 		'identifier_email'=>null,
 		'identifier_institution'=>null,
@@ -408,7 +412,7 @@ if ( $observationdata ) {
 			$observation['institution_storing']
 		);
 	}
-	$taxonomytable[] = ['Sample ID', 'Phylum', 'Class', 'Order', 'Family', 'Subfamily', 'Tribe', 'Genus', 'Species', 'Identifier', 'Identifier Email', 'Identifier Institution', 'Identification Method', 'Taxonomy Notes'];
+	$taxonomytable[] = ['Sample ID', 'Phylum', 'Class', 'Order', 'Family', 'Subfamily', 'Tribe', 'Genus', 'Species', 'Subspecies', 'Identifier', 'Identifier Email', 'Identifier Institution', 'Identification Method', 'Taxonomy Notes'];
 	foreach ( $observationdata as $observation ) {
 		$taxonomytable[] = array(
 			$observation['sample_id'],
@@ -420,6 +424,7 @@ if ( $observationdata ) {
 			$observation['tribe'],
 			$observation['genus'],
 			$observation['species'],
+			$observation['subspecies'],
 			$observation['identifier'],
 			$observation['identifier_email'],
 			$observation['identifier_institution'],
@@ -506,7 +511,7 @@ if ( $observationdata ) {
 	// Taxonomy Table
 	print( '<h2>Taxonomy</h2>' );
 	print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
-	print( '<tr><th>Sample ID</th><th>Phylum</th><th>Class</th><th>Order</th><th>Family</th><th>Subfamily</th><th>Tribe</th><th>Genus</th><th>Species</th><th>Identifier</th><th>Identifier Email</th><th>Identifier Institution</th><th>Identification Method</th><th>Taxonomy Notes</th></tr>' );
+	print( '<tr><th>Sample ID</th><th>Phylum</th><th>Class</th><th>Order</th><th>Family</th><th>Subfamily</th><th>Tribe</th><th>Genus</th><th>Species</th><th>Subspecies</th><th>Identifier</th><th>Identifier Email</th><th>Identifier Institution</th><th>Identification Method</th><th>Taxonomy Notes</th></tr>' );
 
 	foreach ( $observationdata as $observation ) {
 		print( '<tr>' );
@@ -519,6 +524,7 @@ if ( $observationdata ) {
 			isset( $observation['tribe'] ) ? print( '<td>'.$observation['tribe'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['genus'] ) ? print( '<td>'.$observation['genus'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['species'] ) ? print( '<td>'.$observation['species'].'</td>' ) : print( '<td></td>' );
+			isset( $observation['subspecies'] ) ? print( '<td>'.$observation['subspecies'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['identifier'] ) ? print( '<td>'.$observation['identifier'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['identifier_email'] ) ? print( '<td>'.$observation['identifier_email'].'</td>' ) : print( '<td></td>' );
 			isset( $observation['identifier_institution'] ) ? print( '<td>'.$observation['identifier_institution'].'</td>' ) : print( '<td></td>' );
