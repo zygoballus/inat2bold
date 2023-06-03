@@ -107,11 +107,17 @@ function get_taxonomy( $ancestorids, $observationid ) {
 				case 'subfamily':
 					$taxonomy['subfamily'] = $taxon['name'];
 					break;
+				case 'tribe':
+					$taxonomy['tribe'] = $taxon['name'];
+					break;
 				case 'genus':
 					$taxonomy['genus'] = $taxon['name'];
 					break;
 				case 'species':
 					$taxonomy['species'] = $taxon['name'];
+					break;
+				case 'subspecies':
+					$taxonomy['subspecies'] = $taxon['name'];
 					break;
 			}
 		}
@@ -190,8 +196,10 @@ function get_observation_data( $observationid, $guessplace ) {
 		'order'=>null,
 		'family'=>null,
 		'subfamily'=>null,
+		'tribe'=>null,
 		'genus'=>null,
 		'species'=>null,
+		'subspecies'=>null,
 		'identifier'=>null,
 		'identifier_email'=>null,
 		'identifier_institution'=>null,
@@ -443,7 +451,7 @@ if ( $observationdata ) {
 		// Taxonomy Table
 		print( '<h2>Taxonomy</h2>' );
 		print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
-		print( '<tr><th>Sample ID</th><th>Phylum</th><th>Class</th><th>Order</th><th>Family</th><th>Subfamily</th><th>Genus</th><th>Species</th><th>Identifier</th><th>Identifier Email</th><th>Identifier Institution</th><th>Identification Method</th><th>Taxonomy Notes</th></tr>' );
+		print( '<tr><th>Sample ID</th><th>Phylum</th><th>Class</th><th>Order</th><th>Family</th><th>Subfamily</th><th>Tribe</th><th>Genus</th><th>Species</th><th>Subspecies</th><th>Identifier</th><th>Identifier Email</th><th>Identifier Institution</th><th>Identification Method</th><th>Taxonomy Notes</th></tr>' );
 
 		foreach ( $observationdata as $observation ) {
 			print( '<tr>' );
@@ -453,8 +461,10 @@ if ( $observationdata ) {
 				isset( $observation['order'] ) ? print( '<td>'.$observation['order'].'</td>' ) : print( '<td></td>' );
 				isset( $observation['family'] ) ? print( '<td>'.$observation['family'].'</td>' ) : print( '<td></td>' );
 				isset( $observation['subfamily'] ) ? print( '<td>'.$observation['subfamily'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['tribe'] ) ? print( '<td>'.$observation['tribe'].'</td>' ) : print( '<td></td>' );
 				isset( $observation['genus'] ) ? print( '<td>'.$observation['genus'].'</td>' ) : print( '<td></td>' );
 				isset( $observation['species'] ) ? print( '<td>'.$observation['species'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['subspecies'] ) ? print( '<td>'.$observation['subspecies'].'</td>' ) : print( '<td></td>' );
 				isset( $observation['identifier'] ) ? print( '<td>'.$observation['identifier'].'</td>' ) : print( '<td></td>' );
 				isset( $observation['identifier_email'] ) ? print( '<td>'.$observation['identifier_email'].'</td>' ) : print( '<td></td>' );
 				isset( $observation['identifier_institution'] ) ? print( '<td>'.$observation['identifier_institution'].'</td>' ) : print( '<td></td>' );
@@ -467,7 +477,7 @@ if ( $observationdata ) {
 		// Specimen Details Table
 		print( '<h2>Specimen Details</h2>' );
 		print( '<table class="resulttable" border="0" cellpadding="5" cellspacing="10">' );
-		print( '<tr><th>Sample ID</th><th>Sex</th><th>Reproduction</th><th>Life Stage</th><th>Extra Info</th><th>Notes</th><th>Voucher Status</th><th>Tissue Descriptor</th><th>Associated Taxa</th><th>Associated Specimens</th><th>External URLs</th></tr>' );
+		print( '<tr><th>Sample ID</th><th>Sex</th><th>Reproduction</th><th>Life Stage</th><th>Extra Info</th><th>Notes</th><th>Voucher Status</th><th>Tissue Descriptor</th><th>External URLs</th><th>Associated Taxa</th><th>Associated Specimens</th></tr>' );
 
 		foreach ( $observationdata as $observation ) {
 			print( '<tr>' );
@@ -479,9 +489,9 @@ if ( $observationdata ) {
 				isset( $observation['notes'] ) ? print( '<td>'.$observation['notes'].'</td>' ) : print( '<td></td>' );
 				isset( $observation['voucher_status'] ) ? print( '<td>'.$observation['voucher_status'].'</td>' ) : print( '<td></td>' );
 				isset( $observation['tissue_descriptor'] ) ? print( '<td>'.$observation['tissue_descriptor'].'</td>' ) : print( '<td></td>' );
+				isset( $observation['external_urls'] ) ? print( '<td>'.$observation['external_urls'].'</td>' ) : print( '<td></td>' );
 				isset( $observation['associated_taxa'] ) ? print( '<td>'.$observation['associated_taxa'].'</td>' ) : print( '<td></td>' );
 				isset( $observation['associated specimens'] ) ? print( '<td>'.$observation['associated specimens'].'</td>' ) : print( '<td></td>' );
-				isset( $observation['external_urls'] ) ? print( '<td>'.$observation['external_urls'].'</td>' ) : print( '<td></td>' );
 			print( '</tr>' );
 		}
 		print( '</table>' );
@@ -536,7 +546,7 @@ if ( $observationdata ) {
 				$observation['institution_storing']
 			);
 		}
-		$taxonomytable[] = ['Sample ID', 'Phylum', 'Class', 'Order', 'Family', 'Subfamily', 'Genus', 'Species', 'Identifier', 'Identifier Email', 'Identifier Institution', 'Identification Method', 'Taxonomy Notes'];
+		$taxonomytable[] = ['Sample ID', 'Phylum', 'Class', 'Order', 'Family', 'Subfamily', 'Tribe', 'Genus', 'Species', 'Subspecies', 'Identifier', 'Identifier Email', 'Identifier Institution', 'Identification Method', 'Taxonomy Notes'];
 		foreach ( $observationdata as $observation ) {
 			$taxonomytable[] = array(
 				$observation['sample_id'],
@@ -545,8 +555,10 @@ if ( $observationdata ) {
 				$observation['order'],
 				$observation['family'],
 				$observation['subfamily'],
+				$observation['tribe'],
 				$observation['genus'],
 				$observation['species'],
+				$observation['subspecies'],
 				$observation['identifier'],
 				$observation['identifier_email'],
 				$observation['identifier_institution'],
@@ -554,7 +566,7 @@ if ( $observationdata ) {
 				$observation['taxonomy_notes']
 			);
 		}
-		$detailstable[] = ['Sample ID', 'Sex', 'Reproduction', 'Life Stage', 'Extra Info', 'Notes', 'Voucher Status', 'Tissue Descriptor', 'Associated Taxa', 'Associated Specimens', 'External URLs'];
+		$detailstable[] = ['Sample ID', 'Sex', 'Reproduction', 'Life Stage', 'Extra Info', 'Notes', 'Voucher Status', 'Tissue Descriptor', 'External URLs', 'Associated Taxa', 'Associated Specimens'];
 		foreach ( $observationdata as $observation ) {
 			$detailstable[] = array(
 				$observation['sample_id'],
@@ -565,9 +577,9 @@ if ( $observationdata ) {
 				$observation['notes'],
 				$observation['voucher_status'],
 				$observation['tissue_descriptor'],
+				$observation['external_urls'],
 				$observation['associated_taxa'],
-				$observation['associated specimens'],
-				$observation['external_urls']
+				$observation['associated specimens']
 			);
 		}
 		$collectiontable[] = ['Sample ID', 'Collectors', 'Collection Date', 'Country/Ocean', 'State/Province', 'Region', 'Sector', 'Exact Site', 'Latitude', 'Longitude', 'Elevation', 'Depth', 'Elevation Precision', 'Depth Precision', 'GPS Source', 'Coordinate Accuracy', 'Event Time', 'Collection Date Accuracy', 'Habitat', 'Sampling Protocol', 'Collection Notes', 'Site Code', 'Collection Event ID'];
