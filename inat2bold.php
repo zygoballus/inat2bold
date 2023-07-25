@@ -476,20 +476,21 @@ if ( $observationdata ) {
 			$observation['collection_event_id']
 		);
 	}
+	
 	$xlsx1 = Shuchkin\SimpleXLSXGen::fromArray( $vouchertable );
-	$xlsx1->saveAs('VoucherInfo.xlsx');
+	$xlsx1->saveAs('outputfiles/VoucherInfo.xlsx');
 	$xlsx2 = Shuchkin\SimpleXLSXGen::fromArray( $taxonomytable );
-	$xlsx2->saveAs('Taxonomy.xlsx');
+	$xlsx2->saveAs('outputfiles/Taxonomy.xlsx');
 	$xlsx3 = Shuchkin\SimpleXLSXGen::fromArray( $detailstable );
-	$xlsx3->saveAs('SpecimenDetails.xlsx');
+	$xlsx3->saveAs('outputfiles/SpecimenDetails.xlsx');
 	$xlsx3 = Shuchkin\SimpleXLSXGen::fromArray( $collectiontable );
-	$xlsx3->saveAs('CollectionData.xlsx');
+	$xlsx3->saveAs('outputfiles/CollectionData.xlsx');
 ?>
 <p>
-<a href="VoucherInfo.xlsx">VoucherInfo.xlsx</a><br/>
-<a href="Taxonomy.xlsx">Taxonomy.xlsx</a><br/>
-<a href="SpecimenDetails.xlsx">SpecimenDetails.xlsx</a><br/>
-<a href="CollectionData.xlsx">CollectionData.xlsx</a><br/>
+<a href="outputfiles/VoucherInfo.xlsx">VoucherInfo.xlsx</a><br/>
+<a href="outputfiles/Taxonomy.xlsx">Taxonomy.xlsx</a><br/>
+<a href="outputfiles/SpecimenDetails.xlsx">SpecimenDetails.xlsx</a><br/>
+<a href="outputfiles/CollectionData.xlsx">CollectionData.xlsx</a><br/>
 </p>
 <?php
 	// Voucher Info Table
