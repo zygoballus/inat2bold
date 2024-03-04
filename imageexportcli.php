@@ -12,9 +12,6 @@ $errors = [];
 $observationdata = [];
 $fileoutput = false;
 $sleeptime = 2;
-$observations = [
-'https://www.inaturalist.org/observations/123456'
-];
 
 /**
  * Make curl request using the passed URL
@@ -131,16 +128,21 @@ function downloadFile( $fileUrl ) {
 }
 
 print("------------------ SCRIPT STARTED ------------------\n");
-// See if form was submitted.
-if ( $observations ) {
-	$start_time = microtime( true );
-	//$observationlist = explode( "\n", $_POST['observations'] );
-	$observationlist = $observations;
-	// Limit to 95 observations.
-	$observationlist = array_slice( $observationlist, 0, 95 );
+$start_time = microtime( true );
+$myFile = "observationlist.txt";
+$fh = fopen( $myFile, 'r' ) or die( "can't open file" );
+if ( $fh ) {
+	$observationlist = explode( "\n", fread( $fh, filesize( $myFile ) ) );
+}
+fclose( $fh );
+// Remove any empty entries
+$observationlist = array_filter( $observationlist );
+// Limit to 95 observations.
+$observationlist = array_slice( $observationlist, 0, 95 );
+if ( $observationlist ) {
 	$a = 0;
-	foreach ( $observationlist as $observationid ) {
-		if ( preg_match( '/\d+/', $observationid, $matches ) ) {
+	foreach ( $observationlist as $observation ) {
+		if ( preg_match( '/\d+/', $observation, $matches ) ) {
 			$observationid = $matches[0];
 			$observationdata[$a] = get_observation_data( $observationid );
 		} else {
@@ -163,18 +165,23 @@ if ( $errors ) {
 	}
 }
 if ( $observationdata ) {
-	print( "Sample ID\tLicense Holder\tLicense Photo\tURL\n" );
+	//print( "Image File\tSample ID\tLicense Holder\tLicense Photo\tURL\n" );
+	print( "Image File\tSample ID\n" );
 
 	foreach ( $observationdata as $observation ) {
 		foreach ( $observation['photos'] as $photo ) {
-			isset( $observation['sample_id'] ) ? print( $observation['sample_id']."\t" ) : print( "\t" );
-			isset( $observation['license_holder'] ) ? print( $observation['license_holder']."\t" ) : print( "\t" );
-			isset( $photo['license'] ) ? print( $photo['license']."\t" ) : print( "\t");
-			isset( $photo['url'] ) ? print( $photo['url']."\n" ) : print( "\n" );
+			preg_match( '/photos\/(\d+)/', $photo['url'], $matches );
+			$photoId = $matches[1];
+			isset( $photoId ) ? print( $photoId."\t" ) : print( "\t" );
+			isset( $observation['sample_id'] ) ? print( $observation['sample_id']."\n" ) : print( "\n" );
+			//isset( $observation['license_holder'] ) ? print( $observation['license_holder']."\t" ) : print( "\t" );
+			//isset( $photo['license'] ) ? print( $photo['license']."\t" ) : print( "\t");
+			//isset( $photo['url'] ) ? print( $photo['url']."\n" ) : print( "\n" );
 		}
 	}
 	print( "Execution time: " . $execution_time . " seconds.\n" );
 }
+/*
 if ( $observationdata ) {
 	foreach ( $observationdata as $observation ) {
 		foreach ( $observation['photos'] as $photo ) {
@@ -184,7 +191,9 @@ if ( $observationdata ) {
 			} else {
 				echo "Error downloading file: " . $result . "\n";
 			}
+			sleep( 1 );
 		}
 	}
 }
+*/
 print("------------------ SCRIPT TERMINATED ------------------\n");
